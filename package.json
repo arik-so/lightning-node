@@ -1,6 +1,6 @@
 {
 	"name": "lightning-node",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Library for interacting with the Lightning Network and spinning up a node.",
 	"main": "index.js",
 	"types": "index.d.ts",
@@ -8,6 +8,10 @@
 		"test": "./node_modules/mocha/bin/_mocha ./test",
 		"tsc": "./node_modules/typescript/bin/tsc --build tsconfig.json",
 		"prepublish": "npm run tsc"
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/arik-so/lightning-node"
 	},
 	"keywords": [
 		"lightning",

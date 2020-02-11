@@ -3,7 +3,7 @@ import debugModule = require('debug');
 import ecurve = require('ecurve');
 import * as crypto from 'crypto';
 import {Point} from 'ecurve';
-import TransmissionHandler from './transmission_handler';
+import Cipher from './cipher';
 import HKDF from './hkdf';
 import Chacha from 'chacha-poly1305-wasm';
 import ChachaNonce from './chacha_nonce';
@@ -38,7 +38,7 @@ export default class Handshake {
 	private hash: HandshakeHash;
 	private chainingKey: Buffer;
 
-	private txHandler: TransmissionHandler;
+	private cipher: Cipher;
 
 	constructor({privateKey = null}: { privateKey?: Buffer }) {
 		if (!privateKey) {
@@ -54,7 +54,7 @@ export default class Handshake {
 		this.hash = new HandshakeHash(Buffer.concat([this.chainingKey, prologue]));
 	}
 
-	public actDynamically({role, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { role?: Role, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, transmissionHandler?: TransmissionHandler, unreadIndexOffset: number } {
+	public actDynamically({role, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { role?: Role, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, transmissionHandler?: Cipher, unreadIndexOffset: number } {
 		if (!(this.role in Role)) {
 			if (!(role in Role)) {
 				throw new Error('invalid role');
@@ -66,7 +66,7 @@ export default class Handshake {
 
 		let unreadIndexOffset = 0;
 		let responseBuffer: Buffer = null;
-		let txHander: TransmissionHandler;
+		let txHander: Cipher;
 
 		// we generate a local, static ephemeral private key
 		if (!this.ephemeralPrivateKey) {
@@ -112,7 +112,7 @@ export default class Handshake {
 			this.processActTwo(incomingBuffer.slice(0, unreadIndexOffset));
 
 			responseBuffer = this.serializeActThree();
-			txHander = this.transmissionHandler;
+			txHander = this.cipher;
 			this.nextActIndex = -1; // we are done
 		} else if (this.nextActIndex === 2 && this.role === Role.RECEIVER) {
 			if (!incomingBuffer) {
@@ -122,7 +122,7 @@ export default class Handshake {
 			unreadIndexOffset = 66;
 			this.processActThree(incomingBuffer.slice(0, unreadIndexOffset));
 
-			txHander = this.transmissionHandler;
+			txHander = this.cipher;
 			this.nextActIndex = -1; // we are done
 		} else {
 			throw new Error('invalid state!');
@@ -133,13 +133,6 @@ export default class Handshake {
 			unreadIndexOffset,
 			transmissionHandler: txHander
 		};
-	}
-
-	public get transmissionHandler(): TransmissionHandler {
-		if (!this.txHandler) {
-			throw new Error('act 3 must be completed before a transmission handler is available');
-		}
-		return this.txHandler;
 	}
 
 	private assumeRole(role: Role) {
@@ -235,7 +228,7 @@ export default class Handshake {
 		const sendingKey = transmissionKeys.slice(0, 32);
 		const receivingKey = transmissionKeys.slice(32);
 
-		this.txHandler = new TransmissionHandler({sendingKey, receivingKey, chainingKey: this.chainingKey});
+		this.cipher = new Cipher({sendingKey, receivingKey, chainingKey: this.chainingKey});
 
 		return Buffer.concat([Buffer.alloc(1, 0), chacha, tag]);
 	}
@@ -274,7 +267,7 @@ export default class Handshake {
 		const receivingKey = transmissionKeys.slice(0, 32);
 		const sendingKey = transmissionKeys.slice(32);
 
-		this.txHandler = new TransmissionHandler({sendingKey, receivingKey, chainingKey: this.chainingKey});
+		this.cipher = new Cipher({sendingKey, receivingKey, chainingKey: this.chainingKey});
 	}
 
 	private serializeActMessage({actIndex, ephemeralPrivateKey, peerPublicKey}: { actIndex: number, ephemeralPrivateKey: Bigi, peerPublicKey: Point }) {

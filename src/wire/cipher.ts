@@ -5,7 +5,7 @@ import ChachaNonce from './chacha_nonce';
 
 const debug = debugModule('bolt08:transmission_handler');
 
-export default class TransmissionHandler {
+export default class Cipher {
 	private sendingKey: Buffer;
 	private receivingKey: Buffer;
 
@@ -22,7 +22,7 @@ export default class TransmissionHandler {
 		this.receivingChainingKey = chainingKey;
 	}
 
-	public send(message: Buffer): Buffer {
+	public encrypt(message: Buffer): Buffer {
 		const length = message.length;
 
 		const lengthBuffer = Buffer.alloc(2);
@@ -37,7 +37,7 @@ export default class TransmissionHandler {
 		return Buffer.concat([encryptedLength, encryptedMessage]);
 	}
 
-	public receive(undelimitedBuffer: Buffer): { message?: Buffer, unreadBuffer: Buffer } {
+	public decrypt(undelimitedBuffer: Buffer): { message?: Buffer, unreadIndexOffset: number } {
 		const encryptedLength = undelimitedBuffer.slice(0, 18);
 		const lengthBuffer = Chacha.decrypt(this.receivingKey, ChachaNonce.encode(BigInt(this.receivingNonce)), Buffer.alloc(0), encryptedLength);
 		const length = lengthBuffer.readUInt16BE(0);
@@ -54,7 +54,7 @@ export default class TransmissionHandler {
 			debug('Tagged Lightning message: too short, aborting');
 			return {
 				message: null, // we failed to decrypt anything
-				unreadBuffer: undelimitedBuffer
+				unreadIndexOffset: 0
 			}
 		}
 
@@ -65,8 +65,7 @@ export default class TransmissionHandler {
 
 		this.incrementReceivingNonce();
 
-		const unreadBuffer = undelimitedBuffer.slice(lastEncryptedDataIndex);
-		return {message, unreadBuffer};
+		return {message, unreadIndexOffset: lastEncryptedDataIndex};
 	}
 
 	private incrementSendingNonce() {
