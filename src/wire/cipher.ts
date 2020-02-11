@@ -38,6 +38,14 @@ export default class Cipher {
 	}
 
 	public decrypt(undelimitedBuffer: Buffer): { message?: Buffer, unreadIndexOffset: number } {
+		if (undelimitedBuffer.length < 18) {
+			debug('Buffer too short to encode message length');
+			return {
+				message: null, // we failed to decrypt anything
+				unreadIndexOffset: 0
+			}
+		}
+
 		const encryptedLength = undelimitedBuffer.slice(0, 18);
 		const lengthBuffer = Chacha.decrypt(this.receivingKey, ChachaNonce.encode(BigInt(this.receivingNonce)), Buffer.alloc(0), encryptedLength);
 		const length = lengthBuffer.readUInt16BE(0);
