@@ -1,4 +1,4 @@
-import BigSize from '../big_size';
+import BigSize from './big_size';
 
 export default class TLV {
 
