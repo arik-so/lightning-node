@@ -42,6 +42,8 @@ export default class Socket {
 	private processIncomingData(data: Buffer) {
 		const newMessages = this.peer.receive(data);
 
+		this.flush();
+
 		// resolve promises awaiting data input
 		if (this.dataPromise && newMessages.length > 0) {
 			this.dataResolve(newMessages);
@@ -55,6 +57,16 @@ export default class Socket {
 			this.dataPromise = null;
 		}
 		this.socket.destroy();
+	}
+
+	public flush() {
+		// if we have new incoming data, it needs to be sent immediately
+		const writeBuffer = this.peer.flush();
+		if (writeBuffer.length > 0) {
+			console.log('Sending:');
+			console.log(writeBuffer.toString('hex'),'\n');
+			this.socket.write(writeBuffer);
+		}
 	}
 
 	public send(message: LightningMessage) {
@@ -73,7 +85,7 @@ export default class Socket {
 		}
 
 		// flush everything from the peer down the socket
-		this.socket.write(this.peer.flush());
+		this.flush();
 	}
 
 	public async receive(): Promise<LightningMessage[]> {

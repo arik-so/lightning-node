@@ -27,6 +27,7 @@ export default class Peer {
 		const handshake = new Handshake({privateKey});
 		this.readBuffer = Buffer.alloc(0);
 		this.writeBuffer = Buffer.alloc(0);
+		this.inbox = [];
 
 		if (direction === Direction.Outbound) {
 			if (!Buffer.isBuffer(remotePublicKey) || remotePublicKey.length !== 33) {
@@ -56,6 +57,7 @@ export default class Peer {
 
 		// check what state we're in
 		if (this.conduit instanceof Handshake) {
+
 			const nextStep = this.conduit.actDynamically({incomingBuffer: this.readBuffer});
 			// write data
 			this.writeBuffer = Buffer.concat([this.writeBuffer, nextStep.responseBuffer]);
@@ -70,10 +72,15 @@ export default class Peer {
 		const newMessages = [];
 
 		if (this.conduit instanceof Cipher) {
+
 			let unreadOffset = 0;
 			do {
 				const readResult = this.conduit.decrypt(this.readBuffer);
 				unreadOffset = readResult.unreadIndexOffset;
+
+				if (unreadOffset > 0) {
+					this.readBuffer = this.readBuffer.slice(unreadOffset);
+				}
 
 				if (Buffer.isBuffer(readResult.message)) {
 					const message = LightningMessage.parse(readResult.message);
