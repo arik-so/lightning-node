@@ -1,7 +1,9 @@
-import * as crypto from 'crypto';
 import Peer from './peer';
 import {Socket as TcpSocket} from 'net';
 import LightningMessage from './messaging/lightning_message';
+import debugModule = require('debug');
+
+const debug = debugModule('lightning-node:wire:socket');
 
 export default class Socket {
 
@@ -20,9 +22,7 @@ export default class Socket {
 		this.outbox = [];
 
 		this.socket.on('data', (data: Buffer) => {
-			console.log('Received:');
-			console.log(data.toString('hex'), '\n');
-
+			debug('Received: %s', data.toString('hex'));
 			this.processIncomingData(data);
 		});
 
@@ -33,38 +33,17 @@ export default class Socket {
 		});
 
 		this.socket.on('close', () => {
-			console.log('Connection closed');
+			debug('Connection closed');
 			this.destroy();
 		});
 
-	}
-
-	private processIncomingData(data: Buffer) {
-		const newMessages = this.peer.receive(data);
-
-		this.flush();
-
-		// resolve promises awaiting data input
-		if (this.dataPromise && newMessages.length > 0) {
-			this.dataResolve(newMessages);
-			this.dataPromise = null;
-		}
-	}
-
-	private destroy(error?: Error) {
-		if (this.dataPromise) {
-			this.dataReject(error || new Error('connection closed'));
-			this.dataPromise = null;
-		}
-		this.socket.destroy();
 	}
 
 	public flush() {
 		// if we have new incoming data, it needs to be sent immediately
 		const writeBuffer = this.peer.flush();
 		if (writeBuffer.length > 0) {
-			console.log('Sending:');
-			console.log(writeBuffer.toString('hex'),'\n');
+			debug('Sending: %s', writeBuffer.toString('hex'));
 			this.socket.write(writeBuffer);
 		}
 	}
@@ -103,5 +82,25 @@ export default class Socket {
 		});
 
 		return this.dataPromise;
+	}
+
+	private processIncomingData(data: Buffer) {
+		const newMessages = this.peer.receive(data);
+
+		this.flush();
+
+		// resolve promises awaiting data input
+		if (this.dataPromise && newMessages.length > 0) {
+			this.dataResolve(newMessages);
+			this.dataPromise = null;
+		}
+	}
+
+	private destroy(error?: Error) {
+		if (this.dataPromise) {
+			this.dataReject(error || new Error('connection closed'));
+			this.dataPromise = null;
+		}
+		this.socket.destroy();
 	}
 }

@@ -3,7 +3,7 @@ import HKDF from './hkdf';
 import debugModule = require('debug');
 import ChachaNonce from './chacha_nonce';
 
-const debug = debugModule('bolt08:transmission_handler');
+const debug = debugModule('lightning-node:wire:cipher');
 
 export default class Cipher {
 	private sendingKey: Buffer;

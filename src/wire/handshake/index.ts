@@ -9,7 +9,7 @@ import Chacha from 'chacha-poly1305-wasm';
 import ChachaNonce from '../chacha_nonce';
 import {Direction} from './direction';
 
-const debug = debugModule('bolt08:handshake');
+const debug = debugModule('lightning-node:wire:handshake');
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
 /**
