@@ -89,4 +89,28 @@ export default class Peer {
 		return newMessages;
 	}
 
+	/**
+	 * Returns encrypted message data that was also added to the pending write buffer
+	 * @param message
+	 */
+	public send(message: LightningMessage): Buffer {
+		if (!(this.conduit instanceof Cipher)) {
+			throw new Error('cannot send data before handshake completes');
+		}
+
+		const ciphertext = this.conduit.encrypt(message.toBuffer());
+		this.writeBuffer = Buffer.concat([this.writeBuffer, ciphertext]);
+
+		return ciphertext;
+	}
+
+	/**
+	 * Returns and initializes the write buffer
+	 */
+	public flush(): Buffer {
+		const writeBuffer = this.writeBuffer;
+		this.writeBuffer = Buffer.alloc(0);
+		return writeBuffer;
+	}
+
 }
