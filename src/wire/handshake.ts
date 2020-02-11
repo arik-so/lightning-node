@@ -54,7 +54,7 @@ export default class Handshake {
 		this.hash = new HandshakeHash(Buffer.concat([this.chainingKey, prologue]));
 	}
 
-	public actDynamically({role, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { role?: Role, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, transmissionHandler?: Cipher, unreadIndexOffset: number } {
+	public actDynamically({role, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { role?: Role, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, cipher?: Cipher, unreadIndexOffset: number } {
 		if (!(this.role in Role)) {
 			if (!(role in Role)) {
 				throw new Error('invalid role');
@@ -131,7 +131,7 @@ export default class Handshake {
 		return {
 			responseBuffer,
 			unreadIndexOffset,
-			transmissionHandler: txHander
+			cipher: txHander
 		};
 	}
 

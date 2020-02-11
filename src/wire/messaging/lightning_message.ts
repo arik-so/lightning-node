@@ -53,7 +53,7 @@ export default abstract class LightningMessage {
 		return buffer.length;
 	}
 
-	public static parse(undelimitedBuffer: Buffer): LightningMessage {
+	public static parse(buffer: Buffer): LightningMessage {
 		// dynamic imports to avoid circular dependency
 		const {OpenChannelMessage} = require('./messages/open_channel');
 		const {AcceptChannelMessage} = require('./messages/accept_channel');
@@ -68,9 +68,9 @@ export default abstract class LightningMessage {
 		const {QueryChannelRangeMessage} = require('./messages/query_channel_range');
 		const {ReplyChannelRangeMessage} = require('./messages/reply_channel_range');
 
-		const type = undelimitedBuffer.readUInt16BE(0);
+		const type = buffer.readUInt16BE(0);
 		debug('Parsing message of type %s (%d)', LightningMessageTypes[type], type);
-		const undelimitedData = undelimitedBuffer.slice(2);
+		const undelimitedData = buffer.slice(2);
 		let message: LightningMessage;
 		switch (type) {
 			case LightningMessageTypes.OPEN_CHANNEL:
