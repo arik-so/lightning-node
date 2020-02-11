@@ -20,7 +20,7 @@ export default class Handshake {
 	private direction?: Direction;
 	private nextActIndex: number = -1;
 
-	private privateKey: Bigi;
+	private readonly privateKey: Bigi;
 	private publicKey: Point;
 
 	private ephemeralPrivateKey: Bigi;
