@@ -3,25 +3,21 @@ import debugModule = require('debug');
 import ecurve = require('ecurve');
 import * as crypto from 'crypto';
 import {Point} from 'ecurve';
-import Cipher from './cipher';
-import HKDF from './hkdf';
+import Cipher from '../cipher';
+import HKDF from '../hkdf';
 import Chacha from 'chacha-poly1305-wasm';
-import ChachaNonce from './chacha_nonce';
+import ChachaNonce from '../chacha_nonce';
+import {Direction} from './direction';
 
 const debug = debugModule('bolt08:handshake');
 const secp256k1 = ecurve.getCurveByName('secp256k1');
-
-export enum Role {
-	INITIATOR,
-	RECEIVER
-}
 
 /**
  * Protocol for handling the key setup
  */
 export default class Handshake {
 
-	private role?: Role;
+	private direction?: Direction;
 	private nextActIndex: number = -1;
 
 	private privateKey: Bigi;
@@ -54,13 +50,13 @@ export default class Handshake {
 		this.hash = new HandshakeHash(Buffer.concat([this.chainingKey, prologue]));
 	}
 
-	public actDynamically({role, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { role?: Role, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, cipher?: Cipher, unreadIndexOffset: number } {
-		if (!(this.role in Role)) {
-			if (!(role in Role)) {
-				throw new Error('invalid role');
+	public actDynamically({direction, incomingBuffer, ephemeralPrivateKey, remotePublicKey}: { direction?: Direction, incomingBuffer?: Buffer, ephemeralPrivateKey?: Buffer, remotePublicKey?: Buffer }): { responseBuffer?: Buffer, cipher?: Cipher, unreadIndexOffset: number } {
+		if (!(this.direction in Direction)) {
+			if (!(direction in Direction)) {
+				throw new Error('invalid direction');
 			}
 
-			this.assumeRole(role);
+			this.assumeDirection(direction);
 			this.nextActIndex = 0;
 		}
 
@@ -77,7 +73,7 @@ export default class Handshake {
 		}
 
 		if (this.nextActIndex === 0) {
-			if (this.role === Role.INITIATOR) {
+			if (this.direction === Direction.Outbound) {
 				// we are starting the communication
 
 				if (!remotePublicKey) {
@@ -103,7 +99,7 @@ export default class Handshake {
 				this.nextActIndex = 2; // next step: process incoming act three
 			}
 
-		} else if (this.nextActIndex === 1 && this.role === Role.INITIATOR) {
+		} else if (this.nextActIndex === 1 && this.direction === Direction.Outbound) {
 			if (!incomingBuffer) {
 				throw new Error('incoming message must be known to receive handshake');
 			}
@@ -114,7 +110,7 @@ export default class Handshake {
 			responseBuffer = this.serializeActThree();
 			txHander = this.cipher;
 			this.nextActIndex = -1; // we are done
-		} else if (this.nextActIndex === 2 && this.role === Role.RECEIVER) {
+		} else if (this.nextActIndex === 2 && this.direction === Direction.Inbound) {
 			if (!incomingBuffer) {
 				throw new Error('incoming message must be known to receive handshake');
 			}
@@ -135,24 +131,24 @@ export default class Handshake {
 		};
 	}
 
-	private assumeRole(role: Role) {
-		if (this.role in Role) {
-			if (role === this.role) {
+	private assumeDirection(direction: Direction) {
+		if (this.direction in Direction) {
+			if (direction === this.direction) {
 				return; // nothing is changing
 			}
-			throw new Error('roles cannot change!');
+			throw new Error('directions cannot change!');
 		}
-		this.role = role;
+		this.direction = direction;
 	}
 
-	private assertRole(role: Role) {
-		if (this.role !== role) {
-			throw new Error('invalid action for role!');
+	private assertDirection(direction: Direction) {
+		if (this.direction !== direction) {
+			throw new Error('invalid action for direction!');
 		}
 	}
 
 	public serializeActOne({ephemeralPrivateKey = null, remotePublicKey}: { ephemeralPrivateKey?: Buffer, remotePublicKey: Buffer }): Buffer {
-		this.assumeRole(Role.INITIATOR);
+		this.assumeDirection(Direction.Outbound);
 		this.remotePublicKey = Point.decodeFrom(secp256k1, remotePublicKey);
 		this.hash.update(this.remotePublicKey.getEncoded(true));
 
@@ -169,7 +165,7 @@ export default class Handshake {
 	}
 
 	public processActOne(actOneMessage: Buffer) {
-		this.assumeRole(Role.RECEIVER);
+		this.assumeDirection(Direction.Inbound);
 		this.hash.update(this.publicKey.getEncoded(true));
 
 		this.remoteEphemeralKey = this.processActMessage({
@@ -180,7 +176,7 @@ export default class Handshake {
 	}
 
 	public serializeActTwo({ephemeralPrivateKey = null}: { ephemeralPrivateKey?: Buffer }): Buffer {
-		this.assertRole(Role.RECEIVER);
+		this.assertDirection(Direction.Inbound);
 
 		if (!ephemeralPrivateKey) {
 			ephemeralPrivateKey = crypto.randomBytes(32);
@@ -195,7 +191,7 @@ export default class Handshake {
 	}
 
 	public processActTwo(actTwoMessage: Buffer) {
-		this.assertRole(Role.INITIATOR);
+		this.assertDirection(Direction.Outbound);
 		this.remoteEphemeralKey = this.processActMessage({
 			actIndex: 1,
 			message: actTwoMessage,
@@ -204,7 +200,7 @@ export default class Handshake {
 	}
 
 	public serializeActThree(): Buffer {
-		this.assertRole(Role.INITIATOR);
+		this.assertDirection(Direction.Outbound);
 
 		// do the stuff here
 		const temporaryKey = this.temporaryKeys[1]; // from the second act
@@ -234,7 +230,7 @@ export default class Handshake {
 	}
 
 	public processActThree(actThreeMessage: Buffer) {
-		this.assertRole(Role.RECEIVER);
+		this.assertDirection(Direction.Inbound);
 
 		if (actThreeMessage.length != 66) {
 			throw new Error('act one/two message must be 50 bytes');

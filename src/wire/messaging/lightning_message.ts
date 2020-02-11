@@ -2,7 +2,7 @@ import bigintBuffer = require('bigint-buffer');
 import ecurve = require('ecurve');
 import {MessageFieldType, MessageFieldTypeHandler} from './types';
 import {Point} from 'ecurve';
-import TLV from './codec/tlv/tlv';
+import TLV from './codec/tlv';
 import * as debugModule from 'debug';
 
 const debug = debugModule('bolt02:lightning-message');

@@ -1,6 +1,6 @@
 import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message';
 import {MessageFieldType} from '../types';
-import TLV from '../codec/tlv/tlv';
+import TLV from '../codec/tlv';
 
 export interface ReplyChannelRangeMessageFields {
 	chain_hash: Buffer,

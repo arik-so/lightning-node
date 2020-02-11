@@ -1,11 +1,7 @@
-import Handshake, {Role} from './handshake';
+import Handshake from './handshake';
 import Cipher from './cipher';
 import LightningMessage from './messaging/lightning_message';
-
-export enum Direction {
-	Inbound,
-	Outbound
-}
+import {Direction} from './handshake/direction';
 
 export default class Peer {
 
@@ -40,7 +36,7 @@ export default class Peer {
 			this.remotePublicKey = remotePublicKey;
 
 			const {responseBuffer} = handshake.actDynamically({
-				role: Role.INITIATOR,
+				direction,
 				remotePublicKey,
 				ephemeralPrivateKey
 			});
