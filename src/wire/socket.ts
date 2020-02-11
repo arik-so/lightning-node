@@ -43,7 +43,7 @@ export default class Socket {
 		const newMessages = this.peer.receive(data);
 
 		// resolve promises awaiting data input
-		if (this.dataPromise) {
+		if (this.dataPromise && newMessages.length > 0) {
 			this.dataResolve(newMessages);
 			this.dataPromise = null;
 		}
