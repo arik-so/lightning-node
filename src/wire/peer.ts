@@ -1,7 +1,8 @@
 import Handshake from './handshake';
 import Cipher from './cipher';
-import LightningMessage from './messaging/lightning_message';
+import LightningMessage, {LightningMessageTypes} from './messaging/lightning_message';
 import {Direction} from './handshake/direction';
+import LightningMessageHandler from '../node/handler';
 
 export default class Peer {
 
@@ -13,6 +14,7 @@ export default class Peer {
 	private writeBuffer: Buffer;
 
 	private inbox: LightningMessage[];
+	private messageHandlers: { [type in LightningMessageTypes]: LightningMessageHandler };
 
 	constructor({direction, privateKey, remotePublicKey, ephemeralPrivateKey}: { direction: Direction, privateKey: Buffer, remotePublicKey?: Buffer, ephemeralPrivateKey?: Buffer }) {
 
@@ -94,6 +96,19 @@ export default class Peer {
 		}
 
 		return newMessages;
+	}
+
+	public async processInbox() {
+		for (const currentMessage of this.inbox) {
+			const type = currentMessage.getType();
+			const handler: LightningMessageHandler = this.messageHandlers[type];
+			if (handler) {
+				const responses = await handler.processMessage(currentMessage);
+				for (const currentResponse of responses) {
+					this.send(currentResponse);
+				}
+			}
+		}
 	}
 
 	/**
