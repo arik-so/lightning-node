@@ -3,6 +3,9 @@ import Cipher from './cipher';
 import LightningMessage, {LightningMessageTypes} from './messaging/lightning_message';
 import {Direction} from './handshake/direction';
 import LightningMessageHandler from '../node/handler';
+import debugModule = require('debug');
+
+const debug = debugModule('lightning-node:wire:peer');
 
 export default class Peer {
 
@@ -14,6 +17,7 @@ export default class Peer {
 	private writeBuffer: Buffer;
 
 	private inbox: LightningMessage[];
+	private inboxProcessingOffset: number = 0;
 	private messageHandlers: { [type in LightningMessageTypes]: LightningMessageHandler };
 
 	constructor({direction, privateKey, remotePublicKey, ephemeralPrivateKey}: { direction: Direction, privateKey: Buffer, remotePublicKey?: Buffer, ephemeralPrivateKey?: Buffer }) {
@@ -30,6 +34,8 @@ export default class Peer {
 		this.readBuffer = Buffer.alloc(0);
 		this.writeBuffer = Buffer.alloc(0);
 		this.inbox = [];
+		// @ts-ignore
+		this.messageHandlers = {};
 
 		if (direction === Direction.Outbound) {
 			if (!Buffer.isBuffer(remotePublicKey) || remotePublicKey.length !== 33) {
@@ -48,6 +54,16 @@ export default class Peer {
 
 		this.conduit = handshake;
 
+	}
+
+	public registerHandler(types: LightningMessageTypes[], handler: LightningMessageHandler) {
+		for (const currentType of types) {
+			if (this.messageHandlers[currentType]) {
+				// handler already registered
+				throw new Error('only one handler permitted per message type!');
+			}
+			this.messageHandlers[currentType] = handler;
+		}
 	}
 
 	/**
@@ -86,6 +102,7 @@ export default class Peer {
 
 				if (Buffer.isBuffer(readResult.message)) {
 					const message = LightningMessage.parse(readResult.message);
+					debug('Received message of type %s (%d)', message.getTypeName(), message.getType());
 					newMessages.push(message);
 				}
 			} while (unreadOffset > 0)
@@ -93,13 +110,15 @@ export default class Peer {
 
 		if (newMessages.length > 0) {
 			this.inbox = [...this.inbox, ...newMessages];
+			this.processInbox();
 		}
 
 		return newMessages;
 	}
 
 	public async processInbox() {
-		for (const currentMessage of this.inbox) {
+		for (const currentMessage of this.inbox.slice(this.inboxProcessingOffset)) {
+			this.inboxProcessingOffset++; // don't process the same message twice
 			const type = currentMessage.getType();
 			const handler: LightningMessageHandler = this.messageHandlers[type];
 			if (handler) {

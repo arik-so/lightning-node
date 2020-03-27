@@ -39,7 +39,7 @@ export default class Cipher {
 
 	public decrypt(undelimitedBuffer: Buffer): { message?: Buffer, unreadIndexOffset: number } {
 		if (undelimitedBuffer.length < 18) {
-			debug('Buffer too short to encode message length');
+			debug('Buffer too short to decode message length');
 			return {
 				message: null, // we failed to decrypt anything
 				unreadIndexOffset: 0
