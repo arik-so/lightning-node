@@ -105,7 +105,7 @@ export default class Peer {
 					debug('Received message of type %s (%d)', message.getTypeName(), message.getType());
 					newMessages.push(message);
 				}
-			} while (unreadOffset > 0)
+			} while (unreadOffset > 0 && this.readBuffer.length > 0)
 		}
 
 		if (newMessages.length > 0) {

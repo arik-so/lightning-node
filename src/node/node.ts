@@ -3,8 +3,9 @@ import * as crypto from 'crypto';
 import {Direction} from '../wire/handshake/direction';
 import * as net from 'net';
 import Socket from '../wire/socket';
-import LightningMessage, {LightningMessageTypes} from '../wire/messaging/lightning_message';
-import LightningMessageHandler from './handler';
+import {LightningMessageTypes} from '../wire/messaging/lightning_message';
+import InitHandler from './handlers/init_handler';
+import PingHandler from './handlers/ping_handler';
 
 export default class Node {
 
@@ -32,11 +33,11 @@ export default class Node {
 		const tcpSocket = new net.Socket();
 		const socket = new Socket(tcpSocket, peer);
 
-		peer.registerHandler([LightningMessageTypes.INIT], new class implements LightningMessageHandler {
-			async processMessage(message: LightningMessage): Promise<LightningMessage[]> {
-				return [message]; // return the same message
-			}
-		});
+		const initHandler = new InitHandler();
+		peer.registerHandler([LightningMessageTypes.INIT], initHandler);
+
+		const pingHandler = new PingHandler();
+		peer.registerHandler([LightningMessageTypes.PING], pingHandler);
 
 		tcpSocket.connect(port, domain, () => {
 			socket.flush();
