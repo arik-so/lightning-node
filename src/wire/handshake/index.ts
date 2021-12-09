@@ -1,13 +1,13 @@
-import Bigi = require('bigi');
-import debugModule = require('debug');
-import ecurve = require('ecurve');
+import {default as Bigi} from 'bigi';
+import {default as debugModule} from 'debug';
+import * as ecurve from 'ecurve';
 import * as crypto from 'crypto';
 import {Point} from 'ecurve';
-import Cipher from '../cipher';
-import HKDF from '../hkdf';
-import Chacha from 'chacha-poly1305-wasm';
-import ChachaNonce from '../chacha_nonce';
-import {Direction} from './direction';
+import Cipher from '../cipher.js';
+import HKDF from '../hkdf.js';
+import {Chacha} from 'chacha-poly1305-wasm';
+import ChachaNonce from '../chacha_nonce.js';
+import {Direction} from './direction.js';
 
 const debug = debugModule('lightning-node:wire:handshake');
 const secp256k1 = ecurve.getCurveByName('secp256k1');

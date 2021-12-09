@@ -1,9 +1,10 @@
 {
 	"name": "lightning-node",
-	"version": "0.1.3",
+	"version": "0.2.0",
 	"description": "Library for interacting with the Lightning Network and spinning up a node.",
 	"main": "index.js",
 	"types": "index.d.ts",
+	"type": "module",
 	"scripts": {
 		"test": "./node_modules/mocha/bin/_mocha ./test",
 		"tsc": "./node_modules/typescript/bin/tsc --build tsconfig.json",
@@ -33,11 +34,11 @@
 		"@types/chai": "^4.2.7",
 		"@types/debug": "^4.1.5",
 		"@types/ecurve": "^1.0.0",
-		"@types/mocha": "^5.2.7",
+		"@types/mocha": "~9.0.0",
 		"@types/node": "^12.12.17",
 		"chai": "^4.2.0",
-		"mocha": "^6.2.2",
-		"typescript": "^3.7.3"
+		"mocha": "~9.1.3",
+		"typescript": "^4.4.4"
 	},
 	"author": "Arik Sosman",
 	"license": "MIT"

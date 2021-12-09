@@ -1,11 +1,11 @@
-import Handshake from './handshake';
-import Cipher from './cipher';
-import LightningMessage, {LightningMessageTypes} from './messaging/lightning_message';
-import {Direction} from './handshake/direction';
-import LightningMessageHandler from '../node/handler';
-import debugModule = require('debug');
+import Handshake from './handshake/index.js';
+import Cipher from './cipher.js';
+import LightningMessage, {LightningMessageTypes} from './messaging/lightning_message.js';
+import {Direction} from './handshake/direction.js';
+import LightningMessageHandler from '../node/handler.js';
+import * as debugModule from 'debug';
 
-const debug = debugModule('lightning-node:wire:peer');
+const debug = debugModule.default('lightning-node:wire:peer');
 
 export default class Peer {
 
@@ -70,7 +70,7 @@ export default class Peer {
 	 * Returns array of new Lightning messages
 	 * @param data
 	 */
-	public receive(data: Buffer): LightningMessage[] {
+	public async receive(data: Buffer): Promise<LightningMessage[]> {
 		this.readBuffer = Buffer.concat([this.readBuffer, data]);
 
 		// check what state we're in
@@ -101,7 +101,7 @@ export default class Peer {
 				}
 
 				if (Buffer.isBuffer(readResult.message)) {
-					const message = LightningMessage.parse(readResult.message);
+					const message = await LightningMessage.parse(readResult.message);
 					debug('Received message of type %s (%d)', message.getTypeName(), message.getType());
 					newMessages.push(message);
 				}

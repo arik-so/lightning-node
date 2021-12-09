@@ -1,6 +1,6 @@
-import MerkleTree, {MerkleNode} from '../src/chain/merkle';
+import MerkleTree, {MerkleNode} from '../src/chain/merkle.js';
 import * as crypto from 'crypto';
-import chai = require('chai');
+import {default as chai} from 'chai';
 
 const assert = chai.assert;
 

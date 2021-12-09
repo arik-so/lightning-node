@@ -1,6 +1,6 @@
-import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message';
+import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message.js';
 import {Point} from 'ecurve';
-import {MessageFieldType} from '../types';
+import {MessageFieldType} from '../types.js';
 
 export interface OpenChannelMessageFields {
 	chain_hash: Buffer,

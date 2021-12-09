@@ -1,11 +1,11 @@
-import bigintBuffer = require('bigint-buffer');
-import ecurve = require('ecurve');
-import {MessageFieldType, MessageFieldTypeHandler} from './types';
+import * as bigintBuffer from 'bigint-buffer';
+import * as ecurve from 'ecurve';
+import {MessageFieldType, MessageFieldTypeHandler} from './types.js';
 import {Point} from 'ecurve';
-import TLV from './codec/tlv';
+import TLV from './codec/tlv.js';
 import * as debugModule from 'debug';
 
-const debug = debugModule('bolt02:lightning-message');
+const debug = debugModule.default('bolt02:lightning-message');
 const secp256k1 = ecurve.getCurveByName('secp256k1');
 
 export interface LightningMessageField {
@@ -53,20 +53,20 @@ export default abstract class LightningMessage {
 		return buffer.length;
 	}
 
-	public static parse(buffer: Buffer): LightningMessage {
+	public static async parse(buffer: Buffer): Promise<LightningMessage> {
 		// dynamic imports to avoid circular dependency
-		const {OpenChannelMessage} = require('./messages/open_channel');
-		const {AcceptChannelMessage} = require('./messages/accept_channel');
-		const {InitMessage} = require('./messages/init');
-		const {PingMessage} = require('./messages/ping');
-		const {PongMessage} = require('./messages/pong');
-		const {UnsupportedMessage} = require('./messages/unsupported');
-		const {ChannelAnnouncementMessage} = require('./messages/channel_announcement');
-		const {NodeAnnouncementMessage} = require('./messages/node_announcement');
-		const {QueryShortChannelIdsMessage} = require('./messages/query_short_channel_ids');
-		const {ReplyShortChannelIdsEndMessage} = require('./messages/reply_short_channel_ids_end');
-		const {QueryChannelRangeMessage} = require('./messages/query_channel_range');
-		const {ReplyChannelRangeMessage} = require('./messages/reply_channel_range');
+		const {OpenChannelMessage} = await import('./messages/open_channel.js');
+		const {AcceptChannelMessage} = await import('./messages/accept_channel.js');
+		const {InitMessage} = await import('./messages/init.js');
+		const {PingMessage} = await import('./messages/ping.js');
+		const {PongMessage} = await import('./messages/pong.js');
+		const {UnsupportedMessage} = await import('./messages/unsupported.js');
+		const {ChannelAnnouncementMessage} = await import('./messages/channel_announcement.js');
+		const {NodeAnnouncementMessage} = await import('./messages/node_announcement.js');
+		const {QueryShortChannelIdsMessage} = await import('./messages/query_short_channel_ids.js');
+		const {ReplyShortChannelIdsEndMessage} = await import('./messages/reply_short_channel_ids_end.js');
+		const {QueryChannelRangeMessage} = await import('./messages/query_channel_range.js');
+		const {ReplyChannelRangeMessage} = await import('./messages/reply_channel_range.js');
 
 		const type = buffer.readUInt16BE(0);
 		debug('Parsing message of type %s (%d)', LightningMessageTypes[type], type);
@@ -74,36 +74,47 @@ export default abstract class LightningMessage {
 		let message: LightningMessage;
 		switch (type) {
 			case LightningMessageTypes.OPEN_CHANNEL:
+				// @ts-ignore
 				message = new OpenChannelMessage({});
 				break;
 			case LightningMessageTypes.ACCEPT_CHANNEL:
+				// @ts-ignore
 				message = new AcceptChannelMessage({});
 				break;
 			case LightningMessageTypes.INIT:
+				// @ts-ignore
 				message = new InitMessage({});
 				break;
 			case LightningMessageTypes.PING:
+				// @ts-ignore
 				message = new PingMessage({});
 				break;
 			case LightningMessageTypes.PONG:
+				// @ts-ignore
 				message = new PongMessage({});
 				break;
 			case LightningMessageTypes.CHANNEL_ANNOUNCEMENT:
+				// @ts-ignore
 				message = new ChannelAnnouncementMessage({});
 				break;
 			case LightningMessageTypes.NODE_ANNOUNCEMENT:
+				// @ts-ignore
 				message = new NodeAnnouncementMessage({});
 				break;
 			case LightningMessageTypes.QUERY_SHORT_CHANNEL_IDS:
+				// @ts-ignore
 				message = new QueryShortChannelIdsMessage({});
 				break;
 			case LightningMessageTypes.REPLY_SHORT_CHANNEL_IDS_END:
+				// @ts-ignore
 				message = new ReplyShortChannelIdsEndMessage({});
 				break;
 			case LightningMessageTypes.QUERY_CHANNEL_RANGE:
+				// @ts-ignore
 				message = new QueryChannelRangeMessage({});
 				break;
 			case LightningMessageTypes.REPLY_CHANNEL_RANGE:
+				// @ts-ignore
 				message = new ReplyChannelRangeMessage({});
 				break;
 			default:

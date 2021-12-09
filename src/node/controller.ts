@@ -1,4 +1,4 @@
-import Peer from '../wire/peer';
+import Peer from '../wire/peer.js';
 import Channel from './channel';
 
 export default class Controller {

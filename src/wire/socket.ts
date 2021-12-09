@@ -1,9 +1,9 @@
-import Peer from './peer';
+import Peer from './peer.js';
 import {Socket as TcpSocket} from 'net';
-import LightningMessage from './messaging/lightning_message';
-import debugModule = require('debug');
+import LightningMessage from './messaging/lightning_message.js';
+import * as debugModule from 'debug';
 
-const debug = debugModule('lightning-node:wire:socket');
+const debug = debugModule.default('lightning-node:wire:socket');
 
 export default class Socket {
 
@@ -21,9 +21,9 @@ export default class Socket {
 		this.peer = peer;
 		this.outbox = [];
 
-		this.socket.on('data', (data: Buffer) => {
+		this.socket.on('data', async (data: Buffer) => {
 			debug('Received: %s', data.toString('hex'));
-			this.processIncomingData(data);
+			await this.processIncomingData(data);
 		});
 
 		this.socket.on('error', (error: Error) => {
@@ -84,8 +84,8 @@ export default class Socket {
 		return this.dataPromise;
 	}
 
-	private processIncomingData(data: Buffer) {
-		const newMessages = this.peer.receive(data);
+	private async processIncomingData(data: Buffer) {
+		const newMessages = await this.peer.receive(data);
 
 		this.flush();
 

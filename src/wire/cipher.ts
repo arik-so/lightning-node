@@ -1,7 +1,7 @@
-import Chacha from 'chacha-poly1305-wasm';
-import HKDF from './hkdf';
-import debugModule = require('debug');
-import ChachaNonce from './chacha_nonce';
+import {Chacha} from 'chacha-poly1305-wasm';
+import HKDF from './hkdf.js';
+import {default as debugModule} from 'debug';
+import ChachaNonce from './chacha_nonce.js';
 
 const debug = debugModule('lightning-node:wire:cipher');
 

@@ -1,6 +1,5 @@
-import debugModule = require('debug');
-
-const debug = debugModule('lightning-node:node:channel');
+import * as debugModule from 'debug';
+const debug = debugModule.default('lightning-node:node:channel');
 
 /**
  *

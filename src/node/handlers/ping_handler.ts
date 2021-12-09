@@ -1,7 +1,7 @@
-import LightningMessageHandler from '../handler';
-import LightningMessage, {LightningMessageTypes} from '../../wire/messaging/lightning_message';
-import {PingMessage} from '../../wire/messaging/messages/ping';
-import {PongMessage} from '../../wire/messaging/messages/pong';
+import LightningMessageHandler from '../handler.js';
+import LightningMessage, {LightningMessageTypes} from '../../wire/messaging/lightning_message.js';
+import {PingMessage} from '../../wire/messaging/messages/ping.js';
+import {PongMessage} from '../../wire/messaging/messages/pong.js';
 
 export default class PingHandler implements LightningMessageHandler {
 

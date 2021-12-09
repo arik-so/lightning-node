@@ -1,4 +1,4 @@
-import LightningMessage, {LightningMessageField} from '../lightning_message';
+import LightningMessage, {LightningMessageField} from '../lightning_message.js';
 
 export class UnsupportedMessage extends LightningMessage {
 

@@ -1,5 +1,5 @@
-import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message';
-import {MessageFieldType} from '../types';
+import LightningMessage, {LightningMessageField, LightningMessageTypes} from '../lightning_message.js';
+import {MessageFieldType} from '../types.js';
 
 export interface ReplyShortChannelIdsEndMessageFields {
 	chain_hash: Buffer,

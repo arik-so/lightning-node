@@ -1,4 +1,4 @@
-import bigintBuffer = require('bigint-buffer');
+import * as bigintBuffer from 'bigint-buffer';
 
 export default class BigSize {
 

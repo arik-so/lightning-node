@@ -1,11 +1,11 @@
-import Peer from '../wire/peer';
+import Peer from '../wire/peer.js';
 import * as crypto from 'crypto';
-import {Direction} from '../wire/handshake/direction';
+import {Direction} from '../wire/handshake/direction.js';
 import * as net from 'net';
-import Socket from '../wire/socket';
-import {LightningMessageTypes} from '../wire/messaging/lightning_message';
-import InitHandler from './handlers/init_handler';
-import PingHandler from './handlers/ping_handler';
+import Socket from '../wire/socket.js';
+import {LightningMessageTypes} from '../wire/messaging/lightning_message.js';
+import InitHandler from './handlers/init_handler.js';
+import PingHandler from './handlers/ping_handler.js';
 
 export default class Node {
 
@@ -44,6 +44,14 @@ export default class Node {
 		});
 
 		return socket;
+	}
+
+	public get channels(): any[] {
+		return [];
+	}
+
+	public get peers(): any[] {
+		return [];
 	}
 
 }
