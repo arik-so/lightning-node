@@ -37,7 +37,7 @@
 		"@types/mocha": "~9.0.0",
 		"@types/node": "^12.12.17",
 		"chai": "^4.2.0",
-		"mocha": "~9.1.3",
+		"mocha": "~9.2.2",
 		"typescript": "^4.4.4"
 	},
 	"author": "Arik Sosman",
